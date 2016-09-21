@@ -15,14 +15,14 @@ $startTime = microtime();//设定时间标记。用于统计时间
  * @var 数组类型
  */
 $responseObj = array(
-  'REUQEST' => $_REQUEST,
+  // 'REUQEST' => $_REQUEST,
   'status'  => 1, //状态码
   'msg'     => 'ok', //提醒的信息
   'data'    => [], //数据体
   );
 
-// define('__DEBUG__', true);//调试模式
-define('__DEBUG__', false);//线上模式
+define('__DEBUG__', true);//调试模式
+// define('__DEBUG__', false);//线上模式
 
 try {
   $di = new \Phalcon\DI\FactoryDefault();
@@ -79,6 +79,10 @@ try {
     $UserController = new UserController();
     return $UserController;
   });
+  $di->set('UC2', function(){
+    $UserController = new newUserController();
+    return $UserController;
+  });
 
   /**
    * 开启api应用
@@ -88,7 +92,7 @@ try {
 
   //用户登陆
   $app->post('/api/login', function() use ($app, $responseObj) {
-    $data = $app->UserController->userLoginAction($app, $startTime, $responseObj);
+    $data = $app->UC2->login($app, $startTime, $responseObj);
     $app->response->setJsonContent($data);
     $app->response->send();
   });
