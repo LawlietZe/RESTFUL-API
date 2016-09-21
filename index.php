@@ -21,8 +21,8 @@ $responseObj = array(
   'data'    => [], //数据体
   );
 
-// define('__DEBUG__', true);//调试模式
-define('__DEBUG__', false);//线上模式
+define('__DEBUG__', true);//调试模式
+// define('__DEBUG__', false);//线上模式
 
 try {
   $di = new \Phalcon\DI\FactoryDefault();
