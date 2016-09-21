@@ -28,7 +28,7 @@ try {
   $di = new \Phalcon\DI\FactoryDefault();
   $di->set('db', function(){
       if (__DEBUG__) {
-        $db_password            = '111111';
+        $db_password            = '';
         $db_host                = '192.168.0.105';
       }
       else {
@@ -39,7 +39,7 @@ try {
           "host"        => $db_host,
           "username"    => "root",
           "password"    => $db_password,
-          "dbname"      => "xiuwai_database",
+          "dbname"      => "xyt_db",
           "charset"     => "utf8",
           // 'unix_socket' => '/tmp/mysql.sock'
       ));
@@ -75,21 +75,17 @@ try {
     return $response;
   });
 
-  /**
-   * 朱忠来定义的用户控制器
-   */
   $di->set('UserController', function(){
     $UserController = new UserController();
     return $UserController;
   });
-
 
   /**
    * 开启api应用
    * @var app
    */
   $app = new \Phalcon\Mvc\Micro($di);
-  //秀野堂主负责的开始 ****************************************************
+
   //用户登陆
   $app->post('/api/login', function() use ($app, $responseObj) {
     $data = $app->UserController->userLoginAction($app, $startTime, $responseObj);
