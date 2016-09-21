@@ -81,7 +81,7 @@ try {
   });
   $di->set('UC2', function(){
     $UserController = new newUserController();
-    return $UC2;
+    return $UserController;
   });
 
   /**
