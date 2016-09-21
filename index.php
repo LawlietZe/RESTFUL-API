@@ -92,6 +92,11 @@ try {
     $app->response->setJsonContent($data);
     $app->response->send();
   });
+  //用户登陆
+  $app->get('/api/test', function() use ($app, $responseObj) {
+    $app->response->setJsonContent($responseObj);
+    $app->response->send();
+  });
 
   //文件上传例子
   $app->post('/api/upload', function() {
