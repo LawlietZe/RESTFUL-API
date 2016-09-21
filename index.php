@@ -79,6 +79,10 @@ try {
     $UserController = new UserController();
     return $UserController;
   });
+  $di->set('UC2', function(){
+    $UserController = new newUserController();
+    return $UC2;
+  });
 
   /**
    * 开启api应用
@@ -88,7 +92,7 @@ try {
 
   //用户登陆
   $app->post('/api/login', function() use ($app, $responseObj) {
-    $data = $app->UserController->userLoginAction($app, $startTime, $responseObj);
+    $data = $app->UC2->login($app, $startTime, $responseObj);
     $app->response->setJsonContent($data);
     $app->response->send();
   });
