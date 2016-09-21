@@ -15,7 +15,7 @@ $startTime = microtime();//设定时间标记。用于统计时间
  * @var 数组类型
  */
 $responseObj = array(
-  'REUQEST' => $_REQUEST,
+  // 'REUQEST' => $_REQUEST,
   'status'  => 1, //状态码
   'msg'     => 'ok', //提醒的信息
   'data'    => [], //数据体
