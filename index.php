@@ -30,7 +30,6 @@ define('__DEBUG__', true);//调试模式
 try {
   $di = new \Phalcon\DI\FactoryDefault();
   $di->set('db', function(){
-
       // if (__DEBUG__) {
       //   // $db_password            = '';
       //   // $db_host                = '192.168.0.105';
@@ -45,7 +44,6 @@ try {
           // "host"        => $db_host,
           "host"        => "121.40.31.31",
           "username"    => "root",
-          // "password"    => $db_password,
           "password"    => "nineteen",
           "dbname"      => "xyt_db",
           "charset"     => "utf8",
@@ -122,11 +120,12 @@ try {
 
 
 
-  //用户登陆
-  // $app->get('/api/test', function() use ($app, $responseObj) {
-  //   $app->response->setJsonContent($responseObj);
-  //   $app->response->send();
-  // });
+  //发送验证码
+  $app->post('/api/sendsms', function() use ($app, $responseObj) {
+    $data = $app->UC2->sendSMS($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
 
   //文件上传例子
   $app->post('/api/upload', function() {
