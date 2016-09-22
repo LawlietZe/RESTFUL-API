@@ -30,18 +30,21 @@ define('__DEBUG__', true);//调试模式
 try {
   $di = new \Phalcon\DI\FactoryDefault();
   $di->set('db', function(){
-      if (__DEBUG__) {
-        $db_password            = '';
-        $db_host                = '192.168.0.105';
-      }
-      else {
-        $db_password = '';//需要远程服务器密码
-        $db_host     = 'localhost';
-      }
-      return new \Phalcon\Db\Adapter\Pdo\Mysql(array(
-          "host"        => $db_host,
+      // if (__DEBUG__) {
+      //   // $db_password            = '';
+      //   // $db_host                = '192.168.0.105';
+      //   $db_password            = 'root';
+      //   $db_host                = '121.40.31.31';
+      // }
+      // else {
+      //   $db_password = '';//需要远程服务器密码
+      //   $db_host     = 'localhost';
+      // }
+      return new Database([
+          // "host"        => $db_host,
+          "host"        => "121.40.31.31",
           "username"    => "root",
-          "password"    => $db_password,
+          "password"    => "nineteen",
           "dbname"      => "xyt_db",
           "charset"     => "utf8",
           // 'unix_socket' => '/tmp/mysql.sock'
@@ -78,14 +81,12 @@ try {
     return $response;
   });
 
+
   $di->set('UserController', function(){
     $UserController = new UserController();
     return $UserController;
   });
-  $di->set('NewuserController', function(){
-    $NewuserController = new NewuserController();
-    return $NewuserController;
-  });
+
   $di->set('NewUserController', function(){
     $NewUserController = new NewUserController();
     return $NewUserController;
@@ -96,6 +97,13 @@ try {
    * @var app
    */
   $app = new \Phalcon\Mvc\Micro($di);
+
+  //用户登陆
+   $app->post('/api/login', function() use ($app, $responseObj) {
+     $data = $app->NewUserController->login($app, $responseObj);
+     $app->response->setJsonContent($data);
+     $app->response->send();
+   });
 
   // 用户注册
   // $app->post('/api/reg', function() use ($app, $responseObj) {
@@ -110,11 +118,7 @@ try {
     $app->response->send();
   });
 
-  $app->post('/api/login', function() use ($app, $responseObj) {
-    $data = $app->UserController->userLoginAction($app, $startTime, $responseObj);
-    $app->response->setJsonContent($data);
-    $app->response->send();
-  });
+
 
   //发送验证码
   $app->post('/api/sendsms', function() use ($app, $responseObj) {
