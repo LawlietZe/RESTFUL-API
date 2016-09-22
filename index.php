@@ -30,21 +30,20 @@ define('__DEBUG__', true);//调试模式
 try {
   $di = new \Phalcon\DI\FactoryDefault();
   $di->set('db', function(){
-      // if (__DEBUG__) {
-      //   // $db_password            = '';
-      //   // $db_host                = '192.168.0.105';
-      //   $db_password            = 'root';
-      //   $db_host                = '121.40.31.31';
-      // }
-      // else {
-      //   $db_password = '';//需要远程服务器密码
-      //   $db_host     = 'localhost';
-      // }
+      if (__DEBUG__) {
+        $db_password = '';
+        $db_username = 'root';
+        $db_host     = '192.168.0.105';
+      }
+      else {
+        $db_password = '';//需要远程服务器密码
+        $db_username = 'root';
+        $db_host     = 'localhost';
+      }
       return new Database([
-          // "host"        => $db_host,
-          "host"        => "121.40.31.31",
-          "username"    => "root",
-          "password"    => "nineteen",
+          "host"        => $db_host,
+          "username"    => $db_username,
+          "password"    => $db_password,
           "dbname"      => "xyt_db",
           "charset"     => "utf8",
           // 'unix_socket' => '/tmp/mysql.sock'
