@@ -1,6 +1,7 @@
 <?php
 class NewUserController extends \Phalcon\Mvc\Controller
 {
+    //gyc注册部分
     const TOKEN_SALT  = "Fuck~!@#$%^&*()_+You"; // 加盐值
 
 		public function login($app, $responseObj)
@@ -9,13 +10,17 @@ class NewUserController extends \Phalcon\Mvc\Controller
 		}
 
 		/**
-    *检查用户名是哪种类型，进行用户注册，目前是通过手机号检查
-    */
+		 * 检查用户名是哪种类型，进行用户注册，目前是通过手机号检查
+		 * @param  [type] $app       [description]
+		 * @param  [type] $info      [description]
+		 * @param  [type] $checkCate [description]
+		 * @return [type]            [description]
+		 */
     static function userRegChecker($app, $info, $checkCate)
     {
         $phql    = "SELECT count(1) as u_count from User where ".$checkCate." = '".$info."' limit 1";
         $u_count = $app->modelsManager->executeQuery($phql)->getFirst()->u_count;
-        if($u_count > 0 ){
+        if ($u_count > 0 ) {
             // $result['msg']    = '用户已存在！';
             // $result['status'] = 0;
             // return $result;
@@ -25,8 +30,12 @@ class NewUserController extends \Phalcon\Mvc\Controller
             return true;
         }
     }
-
-    static function initRedis() {
+    /**
+     * 实例化一个redis对象
+     * @return boolean [description]
+     */
+    static function initRedis()
+    {
         $redis = new Redis(); // new redis对象
         $redis_host = '127.0.0.1';
         $redis->connect($redis_host, '6379'); // 引用redis对象的connect方法
@@ -52,10 +61,9 @@ class NewUserController extends \Phalcon\Mvc\Controller
 
     /**
      * 用户注册逻辑
-     * @param  对象 $app         [description]
+     * @param  对象 $app            [description]
      * @param  [type] $mt          [description]
      * @param  [type] $responseObj [description]
-     * @param  数组 $params      用户登陆时提交的信息
      * @return [type]              [description]
      */
     public function reg($app, $responseObj)
@@ -69,6 +77,13 @@ class NewUserController extends \Phalcon\Mvc\Controller
             $responseObj['msg']    = '手机号、密码、验证码均不能为空';
             return $responseObj;
         }
+
+        if(!(preg_match("/1[3456789]{1}\d{9}$/", $user_phone))){
+            $responseObj['status'] = 0;
+            $responseObj['msg']    = '请检查你的手机号';
+            return $responseObj;
+        }
+
         $passwordOK    = self::isPasswordOk($password);
         // $passwordOK = true;
         $authenOK      = self::isAuthOK($yzm, $user_phone);
@@ -78,39 +93,65 @@ class NewUserController extends \Phalcon\Mvc\Controller
             $feedback  = self::userRegChecker($app, $user_phone, 'mobile');
             // $feedck = 1;
             if (!$feedback) {
+                // TODO:::
+                // !0 = ?
                 $responseObj['status'] = 0;
                 $responseObj['msg']    = '此用户已存在，不必重复注册！';
                 return $responseObj;
             }
             $user                   = new User();
-            // $register_time       = date('y-m-d h:i:s',time());
-            // $user->user_phone    = $user_phone;
-            // $user->register_time = $register_time;
-            // $user->password      = md5($password);
             $user->mobile           = $user_phone;
             $user->password         = md5($password);
-            $user->yzm              = $yzm;
+            // $user->yzm              = $yzm;
             $user->username         = $user_name;
+            //设置用户默认信息
+            $intN                   = 1;
+            // $dataT                  = date('y-m-d h:i:s',time());
+            $dataT                  = "2008-08-03 14:52:10";
+            $varC                   = 'a';
+            $user->email            = $varC;
+            $user->birthday         = $dataT;
+            $user->sex              = $intN;
+            $user->money            = $intN;
+            $user->county_code      = $intN;
+            $user->city_code        = $intN;
+            $user->update_times     = $intN;
+            $user->create_at        = $dataT;
+            $user->avatar_index     = $intN;
+            $user->create_ip        = $varC;
+            $user->last_update_ip   = $varC;
+            $user->deviceid         = $varC;
+            $user->devicetype       = $intN;
+            $user->latitude         = $intN;
+            $user->longitude        = $intN;
+            $user->comefromplatform = $intN;
+            $user->comefromperson   = $intN;
+            $user->comefromapp      = $intN;
+            $user->PUID             = $varC;
+            $user->PUPWD            = $varC;
+            $user->modi_pwd         = $intN;
+            $user->authroize_string = $varC;
+            $user->tk               = $varC;
+            $user->level            = $intN;
+            // 存储用户信息
             $res                    = $user->save();
-            if($res){
+            // 判断是否插入成功
+            if ($res) {
                 $checkResult = self::userMobileCheckLogic($app, $user_phone, md5($password));
                 $user_token  = self::makeNewToekn($user_phone, $password);
                 $responseObj['status'] = 1;
                 $responseObj['msg']    = '注册成功';
                 $responseObj['data']   = [
-                  'uid'        => strval($checkResult->userid),
-                  'usrname'    => strval($checkResult->username),
-                  'usr_avatar' => strval($checkResult->user_portrait),
-                  'follows'    => strval(""),
-                  'score'      => strval($checkResult->user_points),
-                  'is_buyer'   => strval($checkResult->check_info),
-                  'token'      => strval($user_token),
+                  'usrname' => strval($checkResult->username),//将数组及类之外的变量类型转换成字符串类型
+                  'token'   => strval($user_token),
                   ];
-            } else {
+            }
+            else {
                 $responseObj['status'] = 0;
                 $responseObj['msg']    = $res;
             }
-        }else{
+        }
+        else {
             $responseObj['status'] = 0;
             $responseObj['msg']    = '密码不合法 或 验证码或密码无效';
         }
@@ -118,8 +159,11 @@ class NewUserController extends \Phalcon\Mvc\Controller
     }
 
     /**
-    *  生成Token == 将token写入到redis
-    */
+     * 生成Token == 将token写入到redis
+     * @param  [type] $uid      [description]
+     * @param  [type] $password [description]
+     * @return [type]           [description]
+     */
     public static function makeNewToekn($uid, $password)
     {
         //token应该与主机有关
@@ -136,9 +180,10 @@ class NewUserController extends \Phalcon\Mvc\Controller
     private function isPasswordOk($password)
     {
         //检测密码由（8~20）位的字母与数字组成
-        if(preg_match("/^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,20}$/", $password)){
+        if (preg_match("/^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,20}$/", $password)) {
             return ture;
-        }else{
+        }
+        else {
             return false;
         }
     }
@@ -164,12 +209,43 @@ class NewUserController extends \Phalcon\Mvc\Controller
             $conditons,
             'bind' => $parameters,
         ]);
-        if($user){
+        if ($user) {
             return $user;
-        }else{
+        }
+        else {
             return false;
         }
     }
+    // gyc修改信息部分
+    /**
+     * 修改信息
+     * @param  [type] $app         [description]
+     * @param  [type] $responseObj [description]
+     * @return [type]              [description]
+     */
+    public function changeUserInfo($app, $responseObj)
+    {
+        // TODO:::
+        // 逻辑漏洞
+        $user_phone  = $app->request->getPost('user_phone');
+        $info_id     = $app->request->getPost('info_id');
+        $information = $app->request->getPost('information');
+        $phql        = "UPDATE User set ".$info_id." = '".$information."' where mobile = '".$user_phone."'";
+        $rs          = $app->modelsManager->executeQuery($phql);
+        if ($rs) {
+          $responseObj['status'] = 1;
+          $responseObj['msg']    = '修改成功';
+          $responseObj['data']   = '';
+        }
+        else {
+          $responseObj['status'] = 0;
+          $responseObj['msg']    = '修改失败，请检查你的输入的手机号和修改信息';
+          $responseObj['data']   = '';
+        }
+        // $responseObj['data']   = $phql;
+        return $responseObj;
+    }
+
 
 		public function sendSMS($app, $responseObj)
 		{

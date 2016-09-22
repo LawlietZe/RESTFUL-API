@@ -3,12 +3,10 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: "POST" ');
 header('Access-Control-Allow-Headers: X-Requested-With');
 
-use Phalcon\Db\Adapter\Pdo\Mysql as Database;
-
 // 定义文件上传根目录
 define('UPLOAD_PATH', substr( __DIR__, 0, strrpos(__DIR__,DIRECTORY_SEPARATOR)) .DIRECTORY_SEPARATOR."daiyanren_server_phalcon/images/");
-// error_reporting(E_ERROR | E_WARNING | E_PARSE);//报告运行时错误
-error_reporting(E_ERROR);//报告运行时错误
+error_reporting(E_ERROR | E_WARNING | E_PARSE);//报告运行时错误
+// error_reporting(E_ERROR);//报告运行时错误
 // error_reporting(E_ALL);//报告运行时错误
 $startTime = microtime();//设定时间标记。用于统计时间
 // $debug = new \Phalcon\Debug(); //这里另一种phalcon提供的debug工具
@@ -30,13 +28,24 @@ define('__DEBUG__', true);//调试模式
 try {
   $di = new \Phalcon\DI\FactoryDefault();
   $di->set('db', function(){
-      return new Database([
-          "host"        => "121.40.31.31",
+      if (__DEBUG__) {
+       $db_password            = '';
+       $db_host                = '192.168.0.105';
+        // $db_password            = 'nineteen';
+        // $db_host                = '121.40.31.31';
+      }
+      else {
+        $db_password = '';//需要远程服务器密码
+        $db_host     = 'localhost';
+      }
+      return new Phalcon\Db\Adapter\Pdo\Mysql(Array(
+          "host"        => $db_host,
           "username"    => "root",
-          "password"    => "nineteen",
+          "password"    => $db_password,
           "dbname"      => "xyt_db",
           "charset"     => "utf8",
-      ]);
+          // 'unix_socket' => '/tmp/mysql.sock'
+      ));
   });
 
   $di->set('redis', function() {
@@ -73,10 +82,7 @@ try {
     $UserController = new UserController();
     return $UserController;
   });
-  $di->set('NewuserController', function(){
-    $NewuserController = new NewuserController();
-    return $NewuserController;
-  });
+
   $di->set('NewUserController', function(){
     $NewUserController = new NewUserController();
     return $NewUserController;
@@ -96,6 +102,12 @@ try {
 
   $app->post('/api/login', function() use ($app, $responseObj) {
     $data = $app->UserController->userLoginAction($app, $startTime, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
+
+  $app->post('/api/change_user_info', function() use ($app, $responseObj) {
+    $data = $app->NewUserController->changeUserInfo($app, $responseObj);
     $app->response->setJsonContent($data);
     $app->response->send();
   });
