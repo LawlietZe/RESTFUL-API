@@ -122,7 +122,12 @@ try {
 
   //发送验证码
   $app->post('/api/sendsms', function() use ($app, $responseObj) {
-    $data = $app->UC2->sendSMS($app, $responseObj);
+    $data = $app->NewUserController->sendSMS($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
+  $app->post('/api/modify', function() use ($app, $responseObj) {
+    $data = $app->NewUserController->modify($app, $responseObj);
     $app->response->setJsonContent($data);
     $app->response->send();
   });
