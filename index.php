@@ -2,6 +2,9 @@
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: "POST" ');
 header('Access-Control-Allow-Headers: X-Requested-With');
+
+use Phalcon\Db\Adapter\Pdo\Mysql as Database;
+
 // 定义文件上传根目录
 define('UPLOAD_PATH', substr( __DIR__, 0, strrpos(__DIR__,DIRECTORY_SEPARATOR)) .DIRECTORY_SEPARATOR."daiyanren_server_phalcon/images/");
 // error_reporting(E_ERROR | E_WARNING | E_PARSE);//报告运行时错误
@@ -27,22 +30,27 @@ define('__DEBUG__', true);//调试模式
 try {
   $di = new \Phalcon\DI\FactoryDefault();
   $di->set('db', function(){
-      if (__DEBUG__) {
-        $db_password            = 'nineteen';
-        $db_host                = '121.40.31.31';
-      }
-      else {
-        $db_password = '';//需要远程服务器密码
-        $db_host     = 'localhost';
-      }
-      return new \Phalcon\Db\Adapter\Pdo\Mysql(array(
-          "host"        => $db_host,
+
+      // if (__DEBUG__) {
+      //   // $db_password            = '';
+      //   // $db_host                = '192.168.0.105';
+      //   $db_password            = 'root';
+      //   $db_host                = '121.40.31.31';
+      // }
+      // else {
+      //   $db_password = '';//需要远程服务器密码
+      //   $db_host     = 'localhost';
+      // }
+      return new Database([
+          // "host"        => $db_host,
+          "host"        => "121.40.31.31",
           "username"    => "root",
-          "password"    => $db_password,
+          // "password"    => $db_password,
+          "password"    => "nineteen",
           "dbname"      => "xyt_db",
           "charset"     => "utf8",
           // 'unix_socket' => '/tmp/mysql.sock'
-      ));
+      ]);
   });
 
   $di->set('redis', function() {
@@ -75,26 +83,50 @@ try {
     return $response;
   });
 
-  /**
-   * 王皓宇定义的用户控制器
-   */
-  $di->set('NewUserController', function(){
-     $NewUserController = new NewUserController();
-     return $NewUserController;
-   });
 
+  $di->set('UserController', function(){
+    $UserController = new UserController();
+    return $UserController;
+  });
+
+  $di->set('NewUserController', function(){
+    $NewUserController = new NewUserController();
+    return $NewUserController;
+  });
 
   /**
    * 开启api应用
    * @var app
    */
   $app = new \Phalcon\Mvc\Micro($di);
+
   //用户登陆
    $app->post('/api/login', function() use ($app, $responseObj) {
      $data = $app->NewUserController->login($app, $responseObj);
      $app->response->setJsonContent($data);
      $app->response->send();
    });
+
+  // 用户注册
+  // $app->post('/api/reg', function() use ($app, $responseObj) {
+  //   $data = $app->$NewuserController->regAction($app, $responseObj);
+  //   $app->response->setJsonContent($data);
+  //   $app->response->send();
+  // });
+
+  $app->post('/api/reg', function() use ($app, $responseObj) {
+    $data = $app->NewUserController->reg($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
+
+
+
+  //用户登陆
+  // $app->get('/api/test', function() use ($app, $responseObj) {
+  //   $app->response->setJsonContent($responseObj);
+  //   $app->response->send();
+  // });
 
   //文件上传例子
   $app->post('/api/upload', function() {
