@@ -8,6 +8,6 @@ class User extends Model
 {
    public function getSource()
    {
-       return 'usertable';
+       return 'test';
    }
 }
