@@ -30,21 +30,12 @@ define('__DEBUG__', true);//调试模式
 try {
   $di = new \Phalcon\DI\FactoryDefault();
   $di->set('db', function(){
-      if (__DEBUG__) {
-        $db_password            = '';
-        $db_host                = '192.168.0.105';
-      }
-      else {
-        $db_password = '';//需要远程服务器密码
-        $db_host     = 'localhost';
-      }
-      return new \Phalcon\Db\Adapter\Pdo\Mysql(array(
-          "host"        => $db_host,
+      return new Database([
+          "host"        => "121.40.31.31",
           "username"    => "root",
-          "password"    => $db_password,
+          "password"    => "nineteen",
           "dbname"      => "xyt_db",
           "charset"     => "utf8",
-          // 'unix_socket' => '/tmp/mysql.sock'
       ]);
   });
 
@@ -97,13 +88,6 @@ try {
    */
   $app = new \Phalcon\Mvc\Micro($di);
 
-  // 用户注册
-  // $app->post('/api/reg', function() use ($app, $responseObj) {
-  //   $data = $app->$NewuserController->regAction($app, $responseObj);
-  //   $app->response->setJsonContent($data);
-  //   $app->response->send();
-  // });
-
   $app->post('/api/reg', function() use ($app, $responseObj) {
     $data = $app->NewUserController->reg($app, $responseObj);
     $app->response->setJsonContent($data);
@@ -112,13 +96,6 @@ try {
 
   $app->post('/api/login', function() use ($app, $responseObj) {
     $data = $app->UserController->userLoginAction($app, $startTime, $responseObj);
-    $app->response->setJsonContent($data);
-    $app->response->send();
-  });
-
-  //发送验证码
-  $app->post('/api/sendsms', function() use ($app, $responseObj) {
-    $data = $app->UC2->sendSMS($app, $responseObj);
     $app->response->setJsonContent($data);
     $app->response->send();
   });
