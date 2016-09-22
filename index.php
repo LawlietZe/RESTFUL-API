@@ -15,7 +15,7 @@ $startTime = microtime();//设定时间标记。用于统计时间
  * @var 数组类型
  */
 $responseObj = array(
-  // 'REUQEST' => $_REQUEST,
+  'REUQEST' => $_REQUEST,
   'status'  => 1, //状态码
   'msg'     => 'ok', //提醒的信息
   'data'    => [], //数据体
@@ -28,8 +28,8 @@ try {
   $di = new \Phalcon\DI\FactoryDefault();
   $di->set('db', function(){
       if (__DEBUG__) {
-        $db_password            = '';
-        $db_host                = '192.168.0.105';
+        $db_password            = 'nineteen';
+        $db_host                = '121.40.31.31';
       }
       else {
         $db_password = '';//需要远程服务器密码
@@ -75,27 +75,26 @@ try {
     return $response;
   });
 
-  $di->set('UserController', function(){
-    $UserController = new UserController();
-    return $UserController;
-  });
-  $di->set('UC2', function(){
-    $UserController = new newUserController();
-    return $UC2;
-  });
+  /**
+   * 王皓宇定义的用户控制器
+   */
+  $di->set('NewUserController', function(){
+     $NewUserController = new NewUserController();
+     return $NewUserController;
+   });
+
 
   /**
    * 开启api应用
    * @var app
    */
   $app = new \Phalcon\Mvc\Micro($di);
-
   //用户登陆
-  $app->post('/api/login', function() use ($app, $responseObj) {
-    $data = $app->UC2->login($app, $startTime, $responseObj);
-    $app->response->setJsonContent($data);
-    $app->response->send();
-  });
+   $app->post('/api/login', function() use ($app, $responseObj) {
+     $data = $app->NewUserController->login($app, $responseObj);
+     $app->response->setJsonContent($data);
+     $app->response->send();
+   });
 
   //文件上传例子
   $app->post('/api/upload', function() {
