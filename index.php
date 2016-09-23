@@ -90,6 +90,33 @@ try {
   });
 
   /**
+   * 王皓宇定义的控制器
+   * @var DocPubReplyController
+   */
+  $di->set('DocPubReplyController', function(){
+    $DocPubReplyController = new DocPubReplyController();
+    return $DocPubReplyController;
+  });
+
+  /**
+   * 潘剑定义的控制器
+   * @var DocChangeSearchController
+   */
+  $di->set('DocChangeSearchController', function(){
+    $DocChangeSearchController = new DocChangeSearchController();
+    return $DocChangeSearchController;
+  });
+
+  /**
+   * 甘亚臣定义的控制器
+   * @var DeleteDocRepController
+   */
+  $di->set('DeleteDocRepController', function(){
+    $DeleteDocRepController = new DeleteDocRepController();
+    return $DeleteDocRepController;
+  });
+
+  /**
    * 开启api应用
    * @var app
    */
@@ -108,18 +135,21 @@ try {
       $app->response->setJsonContent($data);
       $app->response->send();
     });
+
   //注册
   $app->post('/api/reg', function() use ($app, $responseObj) {
     $data = $app->NewUserController->reg($app, $responseObj);
     $app->response->setJsonContent($data);
     $app->response->send();
   });
+
   //修改信息
   $app->post('/api/change_user_info', function() use ($app, $responseObj) {
     $data = $app->NewUserController->changeUserInfo($app, $responseObj);
     $app->response->setJsonContent($data);
     $app->response->send();
   });
+
   // //发送验证码
   // $app->post('/api/sendsms', function() use ($app, $responseObj) {
   //   $data = $app->NewUserController->sendSMS($app, $responseObj);
@@ -131,6 +161,48 @@ try {
   //   $app->response->setJsonContent($data);
   //   $app->response->send();
   // });
+
+  //发表文章
+  $app->post('/api/pub_doc', function() use ($app, $responseObj) {
+    $data = $app->DocPubReplyController->pubDoc($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
+
+  //回复文章
+  $app->post('/api/reply_doc', function() use ($app, $responseObj) {
+    $data = $app->DocPubReplyController->replyDoc($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
+
+  //修改文章
+  $app->post('/api/change_doc', function() use ($app, $responseObj) {
+    $data = $app->DocChangeSearchController->changeDoc($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
+
+  //搜索文章
+  $app->post('/api/search_doc', function() use ($app, $responseObj) {
+    $data = $app->DocChangeSearchController->searchDoc($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
+
+  //删除文章
+  $app->post('/api/delete_doc', function() use ($app, $responseObj) {
+    $data = $app->DeleteDocRepController->deleteDoc($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
+
+  //删除回复
+  $app->post('/api/delete_reply', function() use ($app, $responseObj) {
+    $data = $app->DeleteDocRepController->deleteReply($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
 
   //文件上传例子
   $app->post('/api/upload', function() {
