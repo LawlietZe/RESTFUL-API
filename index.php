@@ -21,7 +21,7 @@ $responseObj = array(
   'msg'     => 'ok', //提醒的信息
   'data'    => [], //数据体
   );
-
+  
 define('__DEBUG__', true);//调试模式
 // define('__DEBUG__', false);//线上模式
 
@@ -108,6 +108,17 @@ try {
 
   $app->post('/api/change_user_info', function() use ($app, $responseObj) {
     $data = $app->NewUserController->changeUserInfo($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
+  //发送验证码
+  $app->post('/api/sendsms', function() use ($app, $responseObj) {
+    $data = $app->NewUserController->sendSMS($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
+  $app->post('/api/modify', function() use ($app, $responseObj) {
+    $data = $app->NewUserController->modify($app, $responseObj);
     $app->response->setJsonContent($data);
     $app->response->send();
   });
