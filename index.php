@@ -3,12 +3,10 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: "POST" ');
 header('Access-Control-Allow-Headers: X-Requested-With');
 
-use Phalcon\Db\Adapter\Pdo\Mysql as Database;
-
 // 定义文件上传根目录
 define('UPLOAD_PATH', substr( __DIR__, 0, strrpos(__DIR__,DIRECTORY_SEPARATOR)) .DIRECTORY_SEPARATOR."daiyanren_server_phalcon/images/");
-// error_reporting(E_ERROR | E_WARNING | E_PARSE);//报告运行时错误
-error_reporting(E_ERROR);//报告运行时错误
+error_reporting(E_ERROR | E_WARNING | E_PARSE);//报告运行时错误
+// error_reporting(E_ERROR);//报告运行时错误
 // error_reporting(E_ALL);//报告运行时错误
 $startTime = microtime();//设定时间标记。用于统计时间
 // $debug = new \Phalcon\Debug(); //这里另一种phalcon提供的debug工具
@@ -31,23 +29,23 @@ try {
   $di = new \Phalcon\DI\FactoryDefault();
   $di->set('db', function(){
       if (__DEBUG__) {
-        $db_password = '';
-        $db_username = 'root';
-        $db_host     = '192.168.0.105';
+       $db_password            = '';
+       $db_host                = '192.168.0.105';
+        // $db_password            = 'nineteen';
+        // $db_host                = '121.40.31.31';
       }
       else {
         $db_password = '';//需要远程服务器密码
-        $db_username = 'root';
         $db_host     = 'localhost';
       }
-      return new Database([
+      return new Phalcon\Db\Adapter\Pdo\Mysql(Array(
           "host"        => $db_host,
-          "username"    => $db_username,
+          "username"    => "root",
           "password"    => $db_password,
           "dbname"      => "xyt_db",
           "charset"     => "utf8",
           // 'unix_socket' => '/tmp/mysql.sock'
-      ]);
+      ));
   });
 
   $di->set('redis', function() {
@@ -80,7 +78,6 @@ try {
     return $response;
   });
 
-
   $di->set('UserController', function(){
     $UserController = new UserController();
     return $UserController;
@@ -97,28 +94,23 @@ try {
    */
   $app = new \Phalcon\Mvc\Micro($di);
 
-  //用户登陆
-   $app->post('/api/login', function() use ($app, $responseObj) {
-     $data = $app->NewUserController->login($app, $responseObj);
-     $app->response->setJsonContent($data);
-     $app->response->send();
-   });
-
-  // 用户注册
-  // $app->post('/api/reg', function() use ($app, $responseObj) {
-  //   $data = $app->$NewuserController->regAction($app, $responseObj);
-  //   $app->response->setJsonContent($data);
-  //   $app->response->send();
-  // });
-
   $app->post('/api/reg', function() use ($app, $responseObj) {
     $data = $app->NewUserController->reg($app, $responseObj);
     $app->response->setJsonContent($data);
     $app->response->send();
   });
 
+  $app->post('/api/login', function() use ($app, $responseObj) {
+    $data = $app->UserController->userLoginAction($app, $startTime, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
 
-
+  $app->post('/api/change_user_info', function() use ($app, $responseObj) {
+    $data = $app->NewUserController->changeUserInfo($app, $responseObj);
+    $app->response->setJsonContent($data);
+    $app->response->send();
+  });
   //发送验证码
   $app->post('/api/sendsms', function() use ($app, $responseObj) {
     $data = $app->NewUserController->sendSMS($app, $responseObj);
