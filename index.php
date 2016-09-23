@@ -2,9 +2,6 @@
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: "POST" ');
 header('Access-Control-Allow-Headers: X-Requested-With');
-
-use Phalcon\Db\Adapter\Pdo\Mysql as Database;
-
 // 定义文件上传根目录
 define('UPLOAD_PATH', substr( __DIR__, 0, strrpos(__DIR__,DIRECTORY_SEPARATOR)) .DIRECTORY_SEPARATOR."daiyanren_server_phalcon/images/");
 // error_reporting(E_ERROR | E_WARNING | E_PARSE);//报告运行时错误
@@ -28,27 +25,26 @@ define('__DEBUG__', true);//调试模式
 // define('__DEBUG__', false);//线上模式
 
 try {
-  $di = new \Phalcon\DI\FactoryDefault();
-  $di->set('db', function(){
-      // if (__DEBUG__) {
-      //   // $db_password            = '';
-      //   // $db_host                = '192.168.0.105';
-      //   $db_password            = 'root';
-      //   $db_host                = '121.40.31.31';
-      // }
-      // else {
-      //   $db_password = '';//需要远程服务器密码
-      //   $db_host     = 'localhost';
-      // }
-      return new Database([
-          // "host"        => $db_host,
-          "host"        => "121.40.31.31",
+    $di = new \Phalcon\DI\FactoryDefault();
+    $di->set('db', function(){
+     if (__DEBUG__) {
+    $db_password            = '';
+    $db_host                = '192.168.0.105';
+    // $db_password            = 'nineteen';
+    // $db_host                = '121.40.31.31';
+   }
+      else {
+        $db_password = '';//需要远程服务器密码
+        $db_host     = 'localhost';
+      }
+      return new Phalcon\Db\Adapter\Pdo\Mysql(Array(
+          "host"        => $db_host,
           "username"    => "root",
-          "password"    => "nineteen",
+          "password"    => $db_password,
           "dbname"      => "xyt_db",
           "charset"     => "utf8",
           // 'unix_socket' => '/tmp/mysql.sock'
-      ]);
+      ));
   });
 
   $di->set('redis', function() {
@@ -104,6 +100,15 @@ try {
      $app->response->setJsonContent($data);
      $app->response->send();
    });
+
+   //忘记密码
+    $app->post('/api/forget', function() use ($app, $responseObj) {
+      $data = $app->NewUserController->forgetPwd($app, $responseObj);
+      $app->response->setJsonContent($data);
+      $app->response->send();
+    });
+   //忘记密码
+
 
   // 用户注册
   // $app->post('/api/reg', function() use ($app, $responseObj) {
