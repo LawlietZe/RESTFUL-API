@@ -114,80 +114,99 @@ class NewUserController extends \Phalcon\Mvc\Controller
       return $responseObj;
 	}
 
-
-
-
-
-
 	public function reg($app, $responseObj)
 	{
 
 	}
-//------------------- start panjian sendSMS-----------------------------
-	public function sendSMS($app, $responseObj)
-	{
-		$username = $app->request->getPost('username');
-		$mobile   = $app->request->getPost('mobile');
-		$isMobile = self::isMobile($mobile);
-		if ($isMobile) {
-			$attrArr = array(
-	    		'username' => "'" . $username . "'",
-	    		'mobile'   => "'" . $mobile . "'",
-    		);
-			$mark = self::collating($attrArr);
-			if ($mark) {
-				$yzm     = rand(100000, 999999);
-				$content = "[xyt] yzm = " . $yzm;
-				self::setSMS($mobile, $content);
-				self::update($attrArr, "yzm", $yzm);
-				$responseObj['msg'] = "send yzm";
-			}
-			else {
-				$responseObj['msg'] = "select null";
-			}
-		}else {
-			$responseObj['msg'] = "errror mobile type";
-		}
-		return $responseObj;
 
-	}
+	//
+	/**
+	 * 发送验证码
+	 * @param  [object] $app          [description]
+	 * @param  [array]  $responseObj  [description]
+	 * @return [array]  $responseObj  [description]
+	 */
+	public function sendSMS($app, $responseObj)
+  	{
+  		$username = $app->request->getPost('username');
+  		$mobile   = $app->request->getPost('mobile');
+  		$isMobile = self::isMobile($mobile);
+  		if ($isMobile) {
+  			$attrArr = array(
+  	    		'username' => "'" . $username . "'",
+  	    		'mobile'   => "'" . $mobile . "'",
+      		);
+  			$mark = self::collating($attrArr);
+  			if ( $mark ) {
+  				$yzm     = rand(100000, 999999);
+  				$content = "[秀野堂] 您的验证码为 " . $yzm . " ,验证码将在使用后失效!" ;
+  		// 		self::setSMS($mobile, $content);
+  				self::updateDatabase($attrArr, "authroize_string", $yzm);
+  				$responseObj['msg'] = "验证码发送成功";
+  			}else {
+  				$responseObj['msg'] = "您的手机号与用户名不匹配";
+  			}
+  		}else {
+  			$responseObj['msg'] = "请输入正确的手机号";
+  		}
+  		return $responseObj;
+  	}
 
 	/**
-     *
-     * @param  字符串 $username [description]
-     * @return bool           返回真假布尔值
-     */
-    private function isMobile($mobile)
-    {
-      if (preg_match("/1[3456789]{1}\d{9}$/", $mobile)) {
-        return true;
-      }
-	  else {
-        return false;
-      }
-    }
-
-    private function collating($attrArr){
-    	$phql = null;
+	 * 查询数据库中是否存在记录
+	 * @param  [array] $attrArr [存放要查询的字段和对应值]
+	 * @return [bool] $result [description]
+	 */
+	public function collating($attrArr){
+		$phql = null;
     	foreach($attrArr as $key => $value){
     		$phql .= "'" . $key . "' = " . $value . " and ";
     	}
     	$phql = rtrim($phql, ' and ');
-    	$user = User::findFirst($phql);
+        $user = User::findFirst($phql);
     	if ($user) {
     		$result = true;
-    	}
-		else {
+    	}else {
     		$result = false;
     	}
     	return $result;
     }
 
+	/**
+	 * 更新数据库
+	 * @param  [array] $attrArr [存放要查寻的字段和对应值的数组]
+	 * @param  [string] $key     [要更新的字段名]
+	 * @param  [string] $value   [要更新的值]
+	 */
+	public function updateDatabase($attrArr, $key, $value){
+    	$phql = null;
+    	foreach($attrArr as $key => $value){
+    		$phql .= "'" . $key . "' = " . $value . " and ";
+    	}
+    	$phql       = rtrim($phql, ' and ');
+    	$user       = User::findFirst($phql);
+    	$user->$key = $value;
+    	$user->save();
+    }
+
+	/**
+     * 判断手机号是否符合法
+     * @param  字符串 $username [description]
+     * @return bool           返回真假布尔值
+     */
+    private function isMobile($mobile)
+    {
+		if (preg_match("/1[3456789]{1}\d{9}$/", $mobile)) {
+			return true;
+		}else {
+		    return false;
+		}
+    }
+
     /**
      * 发送短信方法
-     * @param  [type] $phone   [description]
-     * @param  [type] $content [description]
-     * @return [type] $result  [description]
+     * @param  [string] $phone   [手机号]
+     * @param  [string] $content [发送的短信内容]
      */
     private function setSMS($phone, $content)
     {
@@ -222,6 +241,12 @@ class NewUserController extends \Phalcon\Mvc\Controller
         curl_close($ch);//关闭curl请求
     }
 
+	/**
+	 * 保存验证码
+	 * @param  [string] $username [用户名]
+	 * @param  [string] $mobile   [手机号]
+	 * @param  [init] $yzm      [验证码]
+	 */
     private function saveYzm($username, $mobile, $yzm){
     	$phql      = "username = '" . $username . "' and mobile = '" . $mobile . "'";
     	$user      = User::findFirst($phql);
@@ -229,55 +254,61 @@ class NewUserController extends \Phalcon\Mvc\Controller
     	$user->save();
     }
 
-	private function update($attrArr, $key, $value){
-		$phql = null;
-		foreach($attrArr as $key => $value){
-			$phql .= "'" . $key . "' = " . $value . " and ";
-		}
-		$phql       = rtrim($phql, ' and ');
-		$user       = User::findFirst($phql);
-		$user->$key = $value;
-		$user->save();
-	}
-
-
-//------------------- end panjian sendSMS-----------------------------
-
-
-
-
-
-
-//------------------- start panjian modify-----------------------------
+	/**
+	 * [modify description]
+	 * @param  [type] $app         [description]
+	 * @param  [type] $responseObj [description]
+	 * @return [type]              [description]
+	 */
     public function modify($app, $responseObj){
-    	self::sendSMS($app, $responseObj);
-    	$username    = $app->request->getPost('username');
-		$mobile      = $app->request->getPost('mobile');
-		$yzm         = $app->request->getPost('yzm');
-		$password    = $app->request->getPost('password');
-		$attrArr_1 = array(
-			'username' => "'" . $username . "'",
-			'mobile'   => "'" . $mobile . "'",
-			'yzm'      => "'" . $yzm . "'",
-		);
-		$mark = self::collating($attrArr_1);
-		if ( $mark ) {
-			$attrArr_2 = array(
-				'username' => "'" . $username . "'",
-			);
-			self::update($attrArr_2, "password", $password);
-			$responseObj['msg'] = "修改成功";
-		}
-		else{
-			$responseObj['msg'] = "信息不匹配";
+    	$username     = $app->request->getPost('username');
+		$mobile       = $app->request->getPost('mobile');
+		$yzm          = $app->request->getPost('authroize_string');
+		$password     = $app->request->getPost('password');
+        $newpassword1 = $app->request->getPost('newpassword1');
+        $newpassword2 = $app->request->getPost('newpassword2');
+		if ($newpassword1 != '' && $newpassword2 == '') {
+			if ( $newpassword1 == $newpassword2) {
+				$attrArr = array(
+					'username' => "'" . $username . "'",
+					'password' => "'" . $password . "'",
+				);
+				$mark = self::collating($attrArr);
+				if ( $mark ) {
+					$attrArr = array(
+						'username' => "'" . $username . "'",
+						'mobile'   => "'" . $mobile . "'",
+					);
+					self::updateDatabase($attrArr, 'password', $newpassword1);
+					$responseObj['msg'] = "密码已经完成修改";
+				}else {
+					$responseObj['msg'] = "您的帐号与密码不匹配";
+				}
+			}else {
+				$responseObj['msg'] = "请再次确认密码";
+			}
+		}else if ( $mobile ) {
+			$isMobile = $this->isMobile($mobile);
+			if ( $isMobile ) {
+				$attrArr_1 = array(
+					'username' => "'" . $username . "'",
+					'mobile'   => "'" . $mobile . "'",
+					'authroize_string'      => "'" . $yzm . "'",
+				);
+				$mark = self::collating($attrArr_1);
+				if ( $mark ) {
+					$attrArr_2 = array(
+						'username' => "'" . $username . "'",
+					);
+					self::update($attrArr_2, "password", $password);
+					$responseObj['msg'] = "修改成功";
+				}else{
+					$responseObj['msg'] = "用户名,密码,验证码不匹配";
+				}
+			}else {
+				$responseObj['msg'] = "请输入正确的手机号";
+			}
 		}
 		return $responseObj;
     }
-
-
-
-
-
-
-//------------------- end panjian modify-------------------------------
 }
