@@ -3,6 +3,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: "POST" ');
 header('Access-Control-Allow-Headers: X-Requested-With');
 
+
 // 定义文件上传根目录
 define('UPLOAD_PATH', substr( __DIR__, 0, strrpos(__DIR__,DIRECTORY_SEPARATOR)) .DIRECTORY_SEPARATOR."daiyanren_server_phalcon/images/");
 error_reporting(E_ERROR | E_WARNING | E_PARSE);//报告运行时错误
@@ -21,7 +22,7 @@ $responseObj = array(
   'msg'     => 'ok', //提醒的信息
   'data'    => [], //数据体
   );
-  
+
 define('__DEBUG__', true);//调试模式
 // define('__DEBUG__', false);//线上模式
 
@@ -94,34 +95,42 @@ try {
    */
   $app = new \Phalcon\Mvc\Micro($di);
 
+  //用户登陆
+  $app->post('/api/login', function() use ($app, $responseObj) {
+     $data = $app->NewUserController->login($app, $responseObj);
+     $app->response->setJsonContent($data);
+     $app->response->send();
+   });
+
+   //忘记密码
+  $app->post('/api/forget', function() use ($app, $responseObj) {
+      $data = $app->NewUserController->forgetPwd($app, $responseObj);
+      $app->response->setJsonContent($data);
+      $app->response->send();
+    });
+  //注册
   $app->post('/api/reg', function() use ($app, $responseObj) {
     $data = $app->NewUserController->reg($app, $responseObj);
     $app->response->setJsonContent($data);
     $app->response->send();
   });
-
-  $app->post('/api/login', function() use ($app, $responseObj) {
-    $data = $app->UserController->userLoginAction($app, $startTime, $responseObj);
-    $app->response->setJsonContent($data);
-    $app->response->send();
-  });
-
+  //修改信息
   $app->post('/api/change_user_info', function() use ($app, $responseObj) {
     $data = $app->NewUserController->changeUserInfo($app, $responseObj);
     $app->response->setJsonContent($data);
     $app->response->send();
   });
-  //发送验证码
-  $app->post('/api/sendsms', function() use ($app, $responseObj) {
-    $data = $app->NewUserController->sendSMS($app, $responseObj);
-    $app->response->setJsonContent($data);
-    $app->response->send();
-  });
-  $app->post('/api/modify', function() use ($app, $responseObj) {
-    $data = $app->NewUserController->modify($app, $responseObj);
-    $app->response->setJsonContent($data);
-    $app->response->send();
-  });
+  // //发送验证码
+  // $app->post('/api/sendsms', function() use ($app, $responseObj) {
+  //   $data = $app->NewUserController->sendSMS($app, $responseObj);
+  //   $app->response->setJsonContent($data);
+  //   $app->response->send();
+  // });
+  // $app->post('/api/modify', function() use ($app, $responseObj) {
+  //   $data = $app->NewUserController->modify($app, $responseObj);
+  //   $app->response->setJsonContent($data);
+  //   $app->response->send();
+  // });
 
   //文件上传例子
   $app->post('/api/upload', function() {
